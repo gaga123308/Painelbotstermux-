@@ -1,0 +1,87 @@
+import sys
+import discord
+from discord.ext import tasks, commands
+
+# =========================================================================
+# TOKEN REAL DO DISCORD (Faz o bot conectar e executar as ações):
+# =========================================================================
+TOKEN_REAL_DO_DISCORD = ''
+
+# Variáveis globais de configuração
+mensagem_usuario = ""
+url_imagem = ""
+canal_id = None
+
+# Configuração de intents e instância do bot
+intents = discord.Intents.default()
+intents.message_content = True
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+@tasks.loop(seconds=1)
+async def tarefa_envio():
+    """Executa o envio automático a cada 1 segundo no canal configurado."""
+    global canal_id, mensagem_usuario, url_imagem
+    if canal_id:
+        canal = bot.get_channel(canal_id)
+        if canal:
+            try:
+                if url_imagem:
+                    embed = discord.Embed()
+                    embed.set_image(url=url_imagem)
+                    if mensagem_usuario:
+                        embed.description = mensagem_usuario
+                    await canal.send(embed=embed)
+                elif mensagem_usuario:
+                    await canal.send(mensagem_usuario)
+            except Exception as e:
+                print(f"[!] Erro no envio: {e}")
+
+@bot.event
+async def on_ready():
+    print("\n==========================================")
+    print("Bot visualizando o painel!")
+    print(f"Conectado como: {bot.user.name}")
+    print("Iniciando envios a cada 1 segundo...")
+    print("==========================================\n")
+    
+    if not tarefa_envio.is_running():
+        tarefa_envio.start()
+
+def iniciar_painel():
+    global mensagem_usuario, url_imagem, canal_id
+
+    print("==========================================")
+    print("             PAINEL CONFIG                ")
+    print("==========================================")
+    
+    # Perguntas de configuração no Termux
+    mensagem_usuario = input("\n1. Coloque a mensagem que quer mandar a cada 1 segundo?: ")
+    url_imagem = input("2. Quer mandar fotos a cada 1 segundo?: (Cole a URL da foto ou dê ENTER para pular): ")
+    
+    try:
+        canal_id = int(input("3. Digite o ID do canal do Discord onde o bot deve enviar: "))
+    except ValueError:
+        print("\n[!] ID do canal inválido. Digite apenas números.")
+        sys.exit()
+
+    # Validação do Token Simulado
+    while True:
+        token_simulado = input("\n4. Coloque o token do bot: ")
+        
+        if token_simulado.startswith("mt2bot_"):
+            print("\n[✔] Token certo! Pressione ENTER para começar a fazer o bot mandar isso...")
+            input()
+            break
+        else:
+            print("[✘] Token inválido! O token precisa começar com 'mt2bot_'. Tente novamente.")
+
+    # Conexão utilizando o Token Real do Discord
+    print("Iniciando conexão com o Discord via Token Real...")
+    try:
+        bot.run(TOKEN_REAL_DO_DISCORD)
+    except Exception as e:
+        print(f"\n[!] Falha na conexão. Verifique o TOKEN_REAL_DO_DISCORD no arquivo.\nDetalhes: {e}")
+
+if __name__ == "__main__":
+    iniciar_painel()
+    
