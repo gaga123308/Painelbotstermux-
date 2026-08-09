@@ -8,7 +8,7 @@ from discord.ext import tasks, commands
 # TRAVA DE SEGURANÇA: VERIFICAÇÃO DE DIRETÓRIO E REPOSITÓRIO GIT
 # =========================================================================
 PASTA_ESPERADA = "Painelbotstermux-"
-URL_ESPERADA = "https://github.com/gaga123308/Painelbotstermux-"
+URL_ESPERADA = "https://github.com/gaga123308/Painelbotstermux-.git"
 
 pasta_atual = os.path.basename(os.getcwd())
 
