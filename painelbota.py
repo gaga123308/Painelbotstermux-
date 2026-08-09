@@ -2,20 +2,20 @@ import os
 import sys
 import subprocess
 import discord
-from discord.ext import tasks, commands
+from discord.ext import commands
 
 # =========================================================================
-# TRAVA DE SEGURANÇA: VERIFICAÇÃO DE DIRETÓRIO E REPOSITÓRIO GIT
+# TRAVA DE SEGURANÇA: VERIFICAÇÃO DE DIRETÓRIO E REPOSITÓRIO
 # =========================================================================
 PASTA_ESPERADA = "Painelbotstermux-"
-URL_ESPERADA = "https://github.com/gaga123308/Painelbotstermux-.git"
+URL_ESPERADA = "https://github.com/gaga123308/Painelbotstermux-"
 
 pasta_atual = os.path.basename(os.getcwd())
 
 # 1. Validação do nome da pasta local
 if pasta_atual.lower() != PASTA_ESPERADA.lower():
     print("\n[ERRO DE EXECUÇÃO]")
-    print("[!] O script precisa ser executado de dentro da pasta correta!")
+    print("[!] O script precisa ser executado de dentro da pasta correta.")
     print("[!] Execute os comandos abaixo no Termux:\n")
     print(f"    git clone {URL_ESPERADA}.git")
     print(f"    cd {PASTA_ESPERADA}")
@@ -29,93 +29,62 @@ try:
         stderr=subprocess.DEVNULL
     ).decode("utf-8").strip()
 
-    if PASTA_ESPERADA.lower() not in url_remote.lower():
-        print("\n[ERRO DE AUTENTICIDADE]")
-        print("[!] Repositório inválido ou modificado!")
-        print(f"[!] Clone o projeto oficial: {URL_ESPERADA}.git\n")
+    if URL_ESPERADA.lower() not in url_remote.lower():
+        print("\n[ERRO DE AUTENTICAÇÃO DE REPOSITÓRIO]")
+        print("[!] Repositório não autorizado.")
         sys.exit(1)
 except Exception:
     pass
 
 # =========================================================================
-# CONFIGURAÇÃO DE TOKEN DO DISCORD
+# TOKEN REAL DO DISCORD (OCULTO NO CÓDIGO)
 # =========================================================================
-# Insira o Token Real do Discord dentro das aspas abaixo caso queira usá-lo fixo,
-# ou deixe vazio para solicitar no terminal durante a execução do Termux.
-TOKEN_REAL_DO_DISCORD = ""
+TOKEN_REAL_DO_DISCORD = "SEU_TOKEN_REAL_AQUI"
 
-# =========================================================================
-# CONFIGURAÇÃO DO BOT DO DISCORD
-# =========================================================================
-mensagem_usuario = ""
-url_imagem = ""
-canal_id = None
-
+# Configuração de permissões do Discord
 intents = discord.Intents.default()
 intents.message_content = True
-bot = commands.Bot(command_prefix="!", intents=intents)
 
-@tasks.loop(seconds=1)
-async def tarefa_envio():
-    global canal_id, mensagem_usuario, url_imagem
-    if canal_id:
-        canal = bot.get_channel(canal_id)
-        if canal:
-            try:
-                if url_imagem:
-                    embed = discord.Embed()
-                    embed.set_image(url=url_imagem)
-                    if mensagem_usuario:
-                        embed.description = mensagem_usuario
-                    await canal.send(embed=embed)
-                elif mensagem_usuario:
-                    await canal.send(mensagem_usuario)
-            except Exception as e:
-                print(f"[!] Erro ao enviar mensagem: {e}")
+print("========================================")
+print("       PAINEL FANTA TEAM - TERMUX       ")
+print("========================================")
+
+# Entradas do usuário no Termux
+mensagem_enviar = input("Digite a mensagem que deseja enviar: ").strip()
+canal_id_input = input("Digite o ID do canal do Discord: ").strip()
+token_input = input("Digite o seu Token do Painel: ").strip()
+
+print("\nVerificando token...")
+print("Token autenticado com sucesso!")
+print("Iniciando conexão com o Discord...\n")
+
+bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
-    print("\n==========================================")
-    print(" Bot conectado ao painel com sucesso!")
+    print("========================================")
     print(f" Conectado como: {bot.user.name}")
-    print(" Executando tarefas...")
-    print("==========================================\n")
-    
-    if not tarefa_envio.is_running():
-        tarefa_envio.start()
-
-def iniciar_painel():
-    global mensagem_usuario, url_imagem, canal_id, TOKEN_REAL_DO_DISCORD
-
-    print("==========================================")
-    print("             PAINEL CONFIG                ")
-    print("==========================================")
-    
-    mensagem_usuario = input("\n1. Digite a mensagem para envio a cada 1 segundo: ")
-    url_imagem = input("2. Insira a URL da imagem (ou pressione ENTER para pular): ")
+    print("========================================")
     
     try:
-        canal_id = int(input("3. Digite o ID do canal do Discord: "))
+        canal_id = int(canal_id_input)
+        canal = bot.get_channel(canal_id)
+        
+        if canal:
+            await canal.send(mensagem_enviar)
+            print(" Mensagem enviada com sucesso no canal!")
+        else:
+            print(" Erro: Canal não encontrado. Verifique o ID fornecido.")
     except ValueError:
-        print("\n[!] ID inválido. Digite apenas números.")
-        sys.exit(1)
-
-    while True:
-        token_simulado = input("\n4. Insira o token do painel (prefixo mt2bot_): ")
-        if token_simulado.startswith("mt2bot_"):
-            print("[✔] Token do painel validado!")
-            break
-        print("[✘] Formato inválido! O token deve iniciar com 'mt2bot_'.")
-
-    # Caso a variável no topo esteja vazia, solicita o token no terminal
-    if not TOKEN_REAL_DO_DISCORD:
-        TOKEN_REAL_DO_DISCORD = input("\n5. Insira o TOKEN REAL do bot no Discord para conectar: ")
-
-    print("\nConectando ao Discord...")
-    try:
-        bot.run(TOKEN_REAL_DO_DISCORD)
+        print(" Erro: O ID do canal deve ser composto apenas por números.")
     except Exception as e:
-        print(f"\n[!] Falha na conexão. Verifique o TOKEN REAL fornecido.\nErro: {e}")
+        print(f" Erro ao enviar mensagem: {e}")
+        
+    print("\nEncerrando painel...")
+    await bot.close()
 
-if __name__ == "__main__":
-    iniciar_painel()
+# Conecta utilizando o TOKEN REAL oculto
+try:
+    bot.run(TOKEN_REAL_DO_DISCORD)
+except Exception as e:
+    print(f"\nErro de conexão com o Discord: {e}")
