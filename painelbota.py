@@ -19,7 +19,7 @@ if pasta_atual.lower() != PASTA_ESPERADA.lower():
     print("[!] Execute os comandos abaixo no Termux:\n")
     print(f"    git clone {URL_ESPERADA}.git")
     print(f"    cd {PASTA_ESPERADA}")
-    print("    python Termuxpainel.py\n")
+    print("    python painelbota.py\n")
     sys.exit(1)
 
 # 2. Validação da URL do repositório remoto via Git
